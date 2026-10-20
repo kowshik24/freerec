@@ -11,6 +11,10 @@ it with the notes from this file.
 
 ## [Unreleased]
 
+### Changed
+- Release workflow uses `actions/checkout@v7` and `actions/setup-node@v7` (Node 24)
+  and also validates and builds every pull request.
+
 ## [1.1.0] - 2026-10-20
 
 ### Added

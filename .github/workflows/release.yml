@@ -1,10 +1,12 @@
 name: Release
 
 # Push a tag like v1.2.0 (matching "version" in manifest.json) to build the
-# extension zip and publish it as a GitHub Release.
+# extension zip and publish it as a GitHub Release. Pull requests run the same
+# validation and build without publishing.
 on:
   push:
     tags: ['v*.*.*']
+  pull_request:
 
 permissions:
   contents: write
@@ -13,21 +15,22 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Check tag matches manifest version
         run: |
           VERSION=$(jq -r .version manifest.json)
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          [ "$GITHUB_REF_TYPE" = tag ] || exit 0
           TAG="${GITHUB_REF_NAME#v}"
           if [ "$VERSION" != "$TAG" ]; then
             echo "::error::Tag $GITHUB_REF_NAME does not match manifest.json version $VERSION"
             exit 1
           fi
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Validate sources
         run: |
@@ -43,6 +46,7 @@ jobs:
           ls -l dist
 
       - name: Release notes from CHANGELOG
+        if: github.ref_type == 'tag'
         run: |
           awk -v v="$VERSION" '
             index($0, "## [" v "]") == 1 { found = 1; next }
@@ -62,6 +66,7 @@ jobs:
           EOF
 
       - name: Publish release
+        if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
