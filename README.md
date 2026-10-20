@@ -463,6 +463,9 @@ sources. It then builds `freerec-<version>.zip` plus a SHA-256 checksum and
 publishes a GitHub Release, using that version's changelog section as the
 notes.
 
+Every pull request runs the same validation and build without publishing, so a
+broken package shows up before it's tagged.
+
 ### Packaging locally
 
 From the repository root:
