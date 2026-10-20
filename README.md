@@ -12,9 +12,10 @@ straight to a folder on your computer. There's no account, no subscription and n
 upload.
 
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)
-![Version](https://img.shields.io/badge/version-1.1.0-5b4cf0)
+[![Latest release](https://img.shields.io/github/v/release/kowshik24/freerec?label=release&color=5b4cf0)](https://github.com/kowshik24/freerec/releases/latest)
 ![No build step](https://img.shields.io/badge/build-none%20required-2ea44f)
 ![Runs offline](https://img.shields.io/badge/runs-100%25%20offline-c9372c)
+![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
 </div>
 
@@ -38,6 +39,7 @@ upload.
 - [Troubleshooting](#troubleshooting)
 - [Known limitations](#known-limitations)
 - [Credits and third-party software](#credits-and-third-party-software)
+- [License](#license)
 - [Disclaimer](#disclaimer)
 
 ---
@@ -88,10 +90,11 @@ upload.
 FreeRec isn't on the Chrome Web Store, so you install it as an **unpacked
 extension**. It takes about a minute.
 
-### Option A: from the release zip
+### Option A: from a release (recommended)
 
-1. Get `freerec-1.1.0.zip`. It's in this repository's `dist/` folder, or
-   someone can send it to you.
+1. Go to **[Releases → Latest](https://github.com/kowshik24/freerec/releases/latest)**
+   and download `freerec-<version>.zip` under *Assets*. A `.sha256` checksum is
+   published next to it.
 2. Unzip it. You get a folder called `freerec` with `manifest.json` inside.
 3. Move that folder somewhere permanent, for example `Documents/freerec`.
    Chrome loads the extension from it, so don't delete or move it later.
@@ -116,8 +119,10 @@ extracted folder (for example `freerec-main`).
 
 ### Updating
 
-- **Zip install:** replace the folder's contents with the new version, then
-  click the **reload ↻** icon on FreeRec's card in `chrome://extensions`.
+- **Zip install:** download the newest zip from
+  [Releases](https://github.com/kowshik24/freerec/releases), replace the
+  folder's contents, then click the **reload ↻** icon on FreeRec's card in
+  `chrome://extensions`. See [CHANGELOG.md](CHANGELOG.md) for what changed.
 - **Git install:** run `git pull` in the folder, then click **reload ↻**.
 
 Your settings, chosen folder and recordings are kept.
@@ -389,7 +394,9 @@ freerec/
 ├── vendor/mediapipe/        MediaPipe Tasks Vision 0.10.14 + selfie_segmenter.tflite
 ├── icons/                   Toolbar / store icons
 ├── docs/screenshots/        README images
-└── dist/                    Packaged zip
+├── .github/workflows/       Release workflow (builds and publishes the zip on tags)
+├── CHANGELOG.md             Version history, used for release notes
+└── dist/                    Local build output (git-ignored)
 ```
 
 ## Permissions
@@ -438,7 +445,25 @@ There's nothing to compile or install.
 | Panel / bubble | DevTools on the page → frame selector → `panel.html` / `camera.html` |
 | Storage | DevTools → Application → Extension storage / IndexedDB `freerec` |
 
-### Packaging
+### Releasing
+
+Releases are automated by [`.github/workflows/release.yml`](.github/workflows/release.yml):
+
+1. Bump `"version"` in `manifest.json`.
+2. Add a `## [x.y.z] - YYYY-MM-DD` section to [CHANGELOG.md](CHANGELOG.md).
+3. Commit, then tag and push:
+
+   ```bash
+   git tag v1.2.0
+   git push origin main v1.2.0
+   ```
+
+The workflow checks the tag matches the manifest version and validates the
+sources. It then builds `freerec-<version>.zip` plus a SHA-256 checksum and
+publishes a GitHub Release, using that version's changelog section as the
+notes.
+
+### Packaging locally
 
 From the repository root:
 
@@ -548,6 +573,15 @@ compatibility, choose **MP4** in Settings.
   `vendor/mediapipe/NOTICE.txt`.
 - The icons, backgrounds, canvas templates and UI are original work for this
   project.
+
+## License
+
+FreeRec is released under the [MIT License](LICENSE). You're free to use, modify
+and redistribute it, including commercially, as long as the copyright notice is
+kept.
+
+The bundled MediaPipe files in `vendor/mediapipe/` stay under their own
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 ## Disclaimer
 
