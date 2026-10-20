@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FreeRec Library</title>
+  <link rel="stylesheet" href="ui.css">
+  <style>
+    main { max-width: 1100px; margin: 32px auto; padding: 0 16px; display: flex; flex-direction: column; gap: 16px; }
+    #player-card video { width: 100%; max-height: 70vh; background: #000; border-radius: 10px; display: block; }
+    #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+    .item { padding: 0; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; }
+    .item.new { outline: 2px solid var(--accent); }
+    .thumb { aspect-ratio: 16/9; background: #000; position: relative; }
+    .thumb video { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+    .thumb .dur { position: absolute; right: 6px; bottom: 6px; background: rgb(0 0 0 / 70%); color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 6px; }
+    .meta { padding: 10px 12px; }
+    .meta .name { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .item-actions { display: flex; gap: 4px; padding: 0 8px 8px; }
+    .item-actions button { padding: 4px 8px; font-size: 12px; }
+    h2 { font-size: 15px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="row">
+      <div class="brand grow"><span class="brand-dot"></span>My recordings</div>
+      <a class="btn" href="options.html">Settings</a>
+    </div>
+
+    <div id="notice" class="banner ok" hidden></div>
+    <div id="need" class="banner" hidden>
+      <span id="need-text"></span>
+      <div style="margin-top:8px"><button id="need-btn" class="primary"></button></div>
+    </div>
+
+    <section id="player-card" class="card stack" hidden>
+      <div class="row">
+        <strong id="player-title" class="grow"></strong>
+        <button id="player-close" class="ghost">Close</button>
+      </div>
+      <video id="player" controls></video>
+    </section>
+
+    <section class="stack">
+      <h2 id="folder-title"></h2>
+      <div id="grid"></div>
+      <p id="empty" class="muted" hidden>No recordings here yet. Click the FreeRec icon to make one.</p>
+    </section>
+
+    <section id="opfs-section" class="stack" hidden>
+      <h2>Stored in browser</h2>
+      <p class="muted small">Recordings that couldn't be handed to Downloads. Save them somewhere, then delete them here to free space.</p>
+      <div id="opfs-grid" class="stack"></div>
+    </section>
+  </main>
+  <script type="module" src="library.js"></script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FreeRec Settings</title>
+  <link rel="stylesheet" href="ui.css">
+  <style>
+    main { max-width: 680px; margin: 40px auto; padding: 0 16px; display: flex; flex-direction: column; gap: 16px; }
+    .step { display: grid; grid-template-columns: 32px 1fr; gap: 12px; align-items: start; }
+    .num { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); font-weight: 700; }
+    .num.done { background: var(--ok); color: #fff; }
+    h2 { font-size: 16px; margin-bottom: 4px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    #welcome h1 { font-size: 24px; margin-bottom: 6px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand"><span class="brand-dot"></span>FreeRec</div>
+
+    <section id="welcome" class="card" hidden>
+      <h1>FreeRec is installed 🎬</h1>
+      <p class="muted">Free screen + camera recording. No account, no plan, nothing uploaded. Two quick steps and you're ready.
+        Tip: pin FreeRec from the puzzle-piece menu in the toolbar.</p>
+    </section>
+
+    <section class="card step" id="permissions">
+      <div class="num" id="perm-num">1</div>
+      <div>
+        <h2>Camera &amp; microphone</h2>
+        <p class="muted small">Needed for the camera bubble and voice-over. Chrome asks once.</p>
+        <div id="perm-status" class="small"></div>
+        <div class="actions"><button id="grant" class="primary">Allow camera &amp; microphone</button></div>
+      </div>
+    </section>
+
+    <section class="card step" id="folder">
+      <div class="num" id="folder-num">2</div>
+      <div>
+        <h2>Where to save recordings</h2>
+        <p class="muted small">Each recording is written straight into this folder while you record. If no folder is chosen, recordings go to <strong>Downloads/FreeRec</strong>.</p>
+        <div id="folder-status" class="small"></div>
+        <div class="actions">
+          <button id="choose" class="primary">Choose folder…</button>
+          <button id="clear">Use Downloads instead</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Recording defaults</h2>
+      <div class="grid" style="margin-top:12px">
+        <label class="switch">Countdown before recording <input type="checkbox" id="countdown"></label>
+        <label class="switch">Keep recorder tab pinned after saving <input type="checkbox" id="keep"></label>
+        <label class="field">Camera bubble size
+          <select id="bubble">
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </label>
+      </div>
+      <p class="muted small" style="margin-top:12px">Keeping the recorder tab pinned means Chrome remembers folder access between recordings.</p>
+    </section>
+
+    <section class="card">
+      <h2>Keyboard shortcuts</h2>
+      <p class="small"><kbd>Alt+Shift+O</kbd> open FreeRec · <kbd>Alt+Shift+X</kbd> finish &amp; save · <kbd>Alt+Shift+P</kbd> pause/resume · <kbd>Alt+Shift+C</kbd> discard</p>
+      <div class="actions"><button id="shortcuts">Change shortcuts</button><a class="btn" href="library.html">My recordings</a></div>
+    </section>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

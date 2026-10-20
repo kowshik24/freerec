@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FreeRec Recorder</title>
+  <link rel="stylesheet" href="ui.css">
+  <style>
+    main { max-width: 640px; margin: 48px auto; padding: 0 16px; display: flex; flex-direction: column; gap: 16px; }
+    #status { font-size: 18px; font-weight: 600; }
+    #timer { font: 600 28px ui-monospace, monospace; }
+    #preview-wrap { position: relative; border-radius: var(--radius); overflow: hidden; background: #000; aspect-ratio: 16/9; }
+    #preview { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
+    #countdown {
+      position: absolute; inset: 0; display: grid; place-items: center;
+      font: 700 120px system-ui; color: #fff; background: rgb(0 0 0 / 35%);
+    }
+    #prompt .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    #recent li { padding: 6px 0; border-bottom: 1px solid var(--border); }
+    #recent ul { list-style: none; padding: 0; margin: 8px 0 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="row">
+      <div class="brand grow"><span class="brand-dot"></span>FreeRec recorder</div>
+      <a class="btn" href="library.html" target="_blank">My recordings</a>
+    </div>
+
+    <div class="card stack">
+      <div class="row">
+        <div class="grow">
+          <div id="status">Ready</div>
+          <div id="detail" class="muted small">Click the FreeRec icon in the toolbar to start a recording.</div>
+        </div>
+        <div id="timer" hidden>0:00</div>
+      </div>
+
+      <div id="prompt" class="banner" hidden>
+        <div id="prompt-text"></div>
+        <div class="actions" id="prompt-actions"></div>
+      </div>
+
+      <div id="error" class="banner err" hidden></div>
+
+      <div id="preview-wrap" hidden>
+        <video id="preview" muted autoplay playsinline></video>
+        <div id="countdown" hidden></div>
+      </div>
+
+      <div id="controls" class="row" hidden>
+        <button id="btn-pause">Pause</button>
+        <button id="btn-stop" class="danger grow">Finish &amp; save</button>
+        <button id="btn-cancel">Discard</button>
+      </div>
+    </div>
+
+    <p class="muted small">
+      Keep this pinned tab open — it does the recording. Recordings never leave your computer.
+      Shortcuts: <kbd>Alt+Shift+X</kbd> finish · <kbd>Alt+Shift+P</kbd> pause · <kbd>Alt+Shift+C</kbd> discard.
+    </p>
+
+    <div id="recent" class="card" hidden>
+      <h3>Saved this session</h3>
+      <ul></ul>
+    </div>
+  </main>
+  <script type="module" src="recorder.js"></script>
+</body>
+</html>
