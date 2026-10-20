@@ -1,0 +1,71 @@
+name: Release
+
+# Push a tag like v1.2.0 (matching "version" in manifest.json) to build the
+# extension zip and publish it as a GitHub Release.
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check tag matches manifest version
+        run: |
+          VERSION=$(jq -r .version manifest.json)
+          TAG="${GITHUB_REF_NAME#v}"
+          if [ "$VERSION" != "$TAG" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match manifest.json version $VERSION"
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Validate sources
+        run: |
+          jq empty manifest.json
+          for f in *.js lib/*.js; do node --check "$f"; done
+
+      - name: Build zip
+        run: |
+          mkdir -p dist /tmp/pkg/freerec
+          rsync -a --exclude .git --exclude .github --exclude dist --exclude docs --exclude .DS_Store ./ /tmp/pkg/freerec/
+          (cd /tmp/pkg && zip -qr "$GITHUB_WORKSPACE/dist/freerec-$VERSION.zip" freerec)
+          (cd dist && sha256sum "freerec-$VERSION.zip" > "freerec-$VERSION.zip.sha256")
+          ls -l dist
+
+      - name: Release notes from CHANGELOG
+        run: |
+          awk -v v="$VERSION" '
+            index($0, "## [" v "]") == 1 { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "FreeRec $VERSION" > notes.md
+          cat >> notes.md <<EOF
+
+          ## Install
+
+          1. Download **freerec-$VERSION.zip** below and unzip it.
+          2. Open \`chrome://extensions\` and turn on **Developer mode**.
+          3. Click **Load unpacked** and select the unzipped \`freerec\` folder.
+
+          Updating? Replace the folder's contents and click **reload** on FreeRec's card. Your settings are kept.
+          EOF
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "FreeRec $VERSION" \
+            --notes-file notes.md \
+            --verify-tag
