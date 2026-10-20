@@ -1,0 +1,65 @@
+/* Canvas stage. All sizes use container units so the live page and the small
+   picker thumbnails render from the same markup. */
+.stage {
+  position: relative; container-type: size; overflow: hidden;
+  width: 100%; height: 100%; background: var(--bg, #fff); color: var(--ink, #292a2e);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; text-align: left;
+}
+.stage * { box-sizing: border-box; }
+.stage [data-slot] { outline: none; }
+.stage [contenteditable] { cursor: text; }
+.stage [contenteditable]:empty::before { content: attr(data-ph); opacity: .45; }
+.stage ul { margin: 0; padding-left: 1.2em; line-height: 1.55; }
+.stage h1, .stage h3, .stage p { margin: 0; }
+.stage .abs { position: absolute; }
+
+/* --- text layouts --- */
+.l-hello { position: absolute; inset: 0; display: grid; place-items: center; font-size: 2.4cqw; font-weight: 500; }
+.l-hello [data-slot] { min-width: 10cqw; text-align: center; }
+.l-big-top { position: absolute; left: 10cqw; right: 10cqw; top: 13cqh; text-align: center; }
+.l-big-left { position: absolute; left: 7cqw; right: 30cqw; top: 50%; transform: translateY(-50%); }
+.l-big-top h1, .l-big-left h1 { font-size: 5cqw; line-height: 1.1; font-weight: 800; margin-bottom: 1.6cqw; }
+.l-big-top p, .l-big-left p { font-size: 2.5cqw; }
+.l-big-left p { padding-left: 8cqw; }
+.l-bullets { position: absolute; left: 50cqw; right: 6cqw; top: 50%; transform: translateY(-50%); font-size: 2.8cqw; }
+.l-pros { position: absolute; left: 6cqw; right: 6cqw; top: 12cqh; display: grid; grid-template-columns: 1fr 1fr; gap: 6cqw; font-size: 2.3cqw; }
+.l-pros h3 { font-size: 2.5cqw; font-weight: 600; margin-bottom: .6cqw; }
+
+/* --- templates --- */
+.t-meeting .bar { left: 6cqw; right: 6cqw; height: 5.5cqh; border-radius: .9cqw; display: flex; align-items: center; gap: 1cqw; padding: 0 1.2cqw; font-size: 1.7cqw; font-weight: 500; color: #3a2a12; }
+.t-meeting .bar.orange { top: 6cqh; background: #f6ad6d; border: .22cqw solid #de8a44; }
+.t-meeting .bar.purple { top: 14cqh; background: #b9a6e3; border: .22cqw solid #8f7bc9; color: #241a3d; }
+.t-meeting .note { left: 24cqw; right: 6cqw; top: 25cqh; bottom: 12cqh; background: #fff; border: .3cqw solid #3b3b3b; border-radius: 1cqw; display: grid; place-items: center; padding: 4cqw; font-size: 2cqw; text-align: center; color: #292a2e; }
+.t-meeting .accent { left: 19cqw; top: 27cqh; width: .9cqw; height: 22cqh; border-radius: 1cqw; background: linear-gradient(#a389d8, #f2994a); }
+.t-meeting .sun { left: -3cqw; bottom: -6cqw; width: 30cqw; height: 30cqw; border-radius: 50%; background: repeating-conic-gradient(#f39a3b 0 9deg, #f7c06e 9deg 18deg); }
+
+.t-standup .win { background: #f3f7ee; border: .25cqw solid #c9dcc0; border-radius: .6cqw; box-shadow: 0 1cqw 3cqw rgb(0 0 0 / 25%); overflow: hidden; }
+.t-standup .win .tb { height: 3.6cqh; background: linear-gradient(#89bf93, #5f9b6d); display: flex; align-items: center; justify-content: space-between; padding: 0 .8cqw; color: #fff; font-size: 1.1cqw; font-weight: 600; }
+.t-standup .win .tb i { display: inline-block; width: 1cqw; height: 1cqw; margin-left: .3cqw; background: #e8f3e6; border: .12cqw solid #4c7d58; }
+.t-standup .main { left: 16cqw; right: 8cqw; top: 9cqh; bottom: 12cqh; }
+.t-standup .main .body { position: absolute; inset: 3.6cqh 0 0; display: grid; align-items: center; padding: 0 6cqw 0 34cqw; font-size: 3.4cqw; font-weight: 800; line-height: 1.2; color: #1d2b1f; }
+.t-standup .video { left: 2cqw; bottom: 5cqh; width: 21cqw; height: 37cqh; }
+
+.t-celebration .frame { inset: 4cqh 3cqw; border: .7cqw double #d6c39e; border-radius: 1cqw; }
+.t-celebration .frame2 { inset: 7cqh 5cqw; border: .2cqw dashed #e2d2b2; border-radius: .6cqw; }
+.t-celebration h1 { position: absolute; left: 0; right: 0; top: 12cqh; text-align: center; font-family: Didot, "Bodoni 72", "Playfair Display", Georgia, serif; font-size: 7cqw; font-weight: 700; color: #a8865a; letter-spacing: .05em; }
+.t-celebration p { position: absolute; left: 0; right: 0; bottom: 12cqh; text-align: center; font-size: 2cqw; color: #8c7350; font-style: italic; }
+.t-celebration .wreath { left: 50%; top: 61%; width: 30cqw; height: 30cqw; transform: translate(-50%, -50%); }
+
+.t-news .paper { left: 17cqw; right: 15cqw; top: 13cqh; bottom: 13cqh; background: #fff; border: .25cqw solid #b9b3f0; border-radius: 1.6cqw; }
+.t-news .paper.p2 { transform: translate(-1.6cqw, 1.6cqh); }
+.t-news .paper.p3 { transform: translate(-3.2cqw, 3.2cqh); }
+.t-news .blob { border-radius: 50%; background: #f8c4cb; filter: blur(.4cqw); }
+.t-news h1 { position: absolute; left: 22cqw; right: 17cqw; top: 17cqh; font-family: "Arial Black", Impact, system-ui, sans-serif; font-size: 5.2cqw; font-weight: 900; color: #3d5bd9; letter-spacing: -.02em; }
+.t-news ul { position: absolute; left: 45cqw; right: 19cqw; top: 36cqh; font-size: 1.7cqw; color: #3d5bd9; }
+
+.t-hello .card { left: 17cqw; right: 17cqw; top: 9cqh; bottom: 9cqh; background: #ef7f66; border-radius: 2cqw; box-shadow: 0 1cqw 3cqw rgb(0 0 0 / 12%); }
+.t-hello h1 { position: absolute; left: 17cqw; right: 17cqw; top: 10cqh; text-align: center; font-family: "Snell Roundhand", "Brush Script MT", "Segoe Script", cursive; font-size: 6.5cqw; color: #fff; font-weight: 700; }
+.t-hello .inner { left: 19cqw; right: 19cqw; top: 30cqh; bottom: 12cqh; background: #fff; border-radius: 1.4cqw; border: .25cqw solid #e0614a; }
+.t-hello ul { position: absolute; left: 40cqw; right: 21cqw; top: 41cqh; font-size: 2cqw; color: #3b2a26; }
+
+.t-bubble .shapes { inset: 0; width: 100%; height: 100%; }
+
+/* bubble placeholder shown only in thumbnails */
+.thumb-bubble { position: absolute; width: 17cqw; height: 17cqw; border-radius: 50%; transform: translate(-50%, -50%); border: .5cqw solid #fff;
+  background: #c7d2e4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='15' r='7' fill='%237a8aa6'/%3E%3Cpath d='M6 40c1-9 7-14 14-14s13 5 14 14z' fill='%237a8aa6'/%3E%3C/svg%3E") center/cover; }

@@ -54,6 +54,20 @@
       <div class="grid" style="margin-top:12px">
         <label class="switch">Countdown before recording <input type="checkbox" id="countdown"></label>
         <label class="switch">Keep recorder tab pinned after saving <input type="checkbox" id="keep"></label>
+        <label class="field">Video quality
+          <select id="quality">
+            <option value="720">720p</option>
+            <option value="1080">1080p</option>
+            <option value="1440">1440p</option>
+            <option value="2160">4K</option>
+          </select>
+        </label>
+        <label class="field">File format
+          <select id="format">
+            <option value="webm">WebM (VP9) – smallest</option>
+            <option value="mp4">MP4 (H.264) – plays everywhere</option>
+          </select>
+        </label>
         <label class="field">Camera bubble size
           <select id="bubble">
             <option value="small">Small</option>
@@ -63,6 +77,18 @@
         </label>
       </div>
       <p class="muted small" style="margin-top:12px">Keeping the recorder tab pinned means Chrome remembers folder access between recordings.</p>
+    </section>
+
+    <section class="card" id="help">
+      <h2>How to record</h2>
+      <ol class="small" style="margin:8px 0 0;padding-left:18px;line-height:1.7">
+        <li>Click the FreeRec icon in the toolbar. The control panel opens on the page.</li>
+        <li>Pick <strong>Full Screen</strong>, <strong>Window</strong>, <strong>Current tab</strong> or <strong>Camera only</strong>, then your camera and microphone.</li>
+        <li>Optional: <strong>Effects</strong> for background blur, virtual backgrounds, filters, or a Canvas page to present on.</li>
+        <li>Click <strong>Start Recording</strong>. After the 3-2-1 countdown you're live.</li>
+        <li>Use the control bar on the left to finish, pause, restart or discard. The video is saved into your folder.</li>
+      </ol>
+      <p class="muted small">Screenshots: click the camera icon at the top of the panel, choose Custom area or Current tab.</p>
     </section>
 
     <section class="card">

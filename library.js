@@ -3,28 +3,139 @@ import { getFolder, folderPermission, pickFolder, setFolder, formatBytes, format
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const highlight = params.get('new');
-const VIDEO = /\.(webm|mp4|mkv|mov)$/i;
+const KINDS = { videos: /\.(webm|mp4|mkv|mov)$/i, screenshots: /\.(png|jpe?g|webp)$/i };
 const urls = new Set();
+let tab = params.get('tab') === 'screenshots' || /\.(png|jpe?g)$/i.test(highlight || '') ? 'screenshots' : 'videos';
+let entries = []; // { handle, file }
+let dir = null;
 
 function objectUrl(file) {
-  const url = URL.createObjectURL(file);
-  urls.add(url);
-  return url;
+  const u = URL.createObjectURL(file);
+  urls.add(u);
+  return u;
 }
 
-function play(file, name) {
-  $('player').src = objectUrl(file);
-  $('player-title').textContent = name;
-  $('player-card').hidden = false;
-  $('player').play().catch(() => {});
-  $('player-card').scrollIntoView({ behavior: 'smooth' });
+function relative(ms) {
+  const s = (Date.now() - ms) / 1000;
+  if (s < 60) return 'just now';
+  const units = [[60, 'min'], [3600, 'hour'], [86400, 'day'], [604800, 'week'], [2629800, 'month'], [31557600, 'year']];
+  let [div, name] = units[0];
+  for (const u of units) if (s >= u[0]) [div, name] = u;
+  const n = Math.floor(s / div);
+  return `${n} ${name}${n === 1 ? '' : 's'} ago`;
 }
 
-$('player-close').onclick = () => {
-  $('player').pause();
-  $('player').removeAttribute('src');
-  $('player-card').hidden = true;
-};
+const shortDuration = (sec) => (sec < 60 ? `${Math.round(sec)} sec` : formatDuration(sec * 1000));
+
+function openViewer(file, name) {
+  const body = $('modal-body');
+  body.replaceChildren();
+  const media = KINDS.videos.test(name) ? Object.assign(document.createElement('video'), { controls: true, autoplay: true }) : document.createElement('img');
+  media.src = objectUrl(file);
+  body.append(media);
+  $('modal-title').textContent = name;
+  $('modal').hidden = false;
+}
+
+function closeViewer() {
+  $('modal').hidden = true;
+  $('modal-body').replaceChildren();
+}
+$('modal-close').onclick = closeViewer;
+$('modal').onclick = (e) => { if (e.target === $('modal')) closeViewer(); };
+addEventListener('keydown', (e) => { if (e.key === 'Escape') closeViewer(); });
+
+function card({ handle, file }) {
+  const isVideo = KINDS.videos.test(handle.name);
+  const el = document.createElement('div');
+  el.className = 'item';
+  if (handle.name === highlight) el.classList.add('new');
+
+  const thumb = document.createElement('div');
+  thumb.className = 'thumb';
+  if (isVideo) {
+    const v = document.createElement('video');
+    v.preload = 'metadata';
+    v.muted = true;
+    v.src = `${objectUrl(file)}#t=0.5`;
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.hidden = true;
+    v.onloadedmetadata = () => {
+      if (Number.isFinite(v.duration)) {
+        badge.textContent = shortDuration(v.duration);
+        badge.hidden = false;
+      }
+    };
+    thumb.append(v, badge);
+  } else {
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.src = objectUrl(file);
+    thumb.append(img);
+  }
+
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  const name = document.createElement('div');
+  name.className = 'name';
+  name.textContent = handle.name.replace(/\.[^.]+$/, '');
+  name.title = handle.name;
+  const sub = document.createElement('div');
+  sub.className = 'sub';
+  sub.textContent = `${relative(file.lastModified)} · ${formatBytes(file.size)}`;
+  sub.title = new Date(file.lastModified).toLocaleString();
+  meta.append(name, sub);
+
+  const acts = document.createElement('div');
+  acts.className = 'acts';
+  const rename = Object.assign(document.createElement('button'), { textContent: 'Rename' });
+  const del = Object.assign(document.createElement('button'), { textContent: 'Delete' });
+  acts.append(rename, del);
+
+  rename.onclick = async (e) => {
+    e.stopPropagation();
+    const ext = handle.name.match(/\.[^.]+$/)?.[0] || '';
+    const next = prompt('New name', handle.name.slice(0, handle.name.length - ext.length));
+    if (!next) return;
+    try {
+      if (!handle.move) throw new Error('Renaming needs a newer Chrome version.');
+      await handle.move(next.endsWith(ext) ? next : next + ext);
+      load();
+    } catch (err) {
+      alert(`Rename failed: ${err.message}`);
+    }
+  };
+  del.onclick = async (e) => {
+    e.stopPropagation();
+    if (!confirm(`Delete “${handle.name}” from disk? This can't be undone.`)) return;
+    await dir.removeEntry(handle.name);
+    entries = entries.filter((x) => x.handle !== handle);
+    render();
+  };
+  el.onclick = () => openViewer(file, handle.name);
+  el.append(thumb, meta, acts);
+  return el;
+}
+
+function render() {
+  $('title').textContent = tab === 'videos' ? 'Videos' : 'Screenshots';
+  document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
+  const q = $('search').value.trim().toLowerCase();
+  const list = entries.filter((x) => KINDS[tab].test(x.handle.name) && x.handle.name.toLowerCase().includes(q));
+  const sort = $('sort').value;
+  list.sort((a, b) => (sort === 'old' ? a.file.lastModified - b.file.lastModified
+    : sort === 'big' ? b.file.size - a.file.size
+      : sort === 'name' ? a.handle.name.localeCompare(b.handle.name)
+        : b.file.lastModified - a.file.lastModified));
+  for (const u of urls) URL.revokeObjectURL(u);
+  urls.clear();
+  $('grid').replaceChildren(...list.map(card));
+  const noun = tab === 'videos' ? 'video' : 'screenshot';
+  $('count').textContent = dir ? `${list.length} ${noun}${list.length === 1 ? '' : 's'}` : '';
+  $('empty').hidden = list.length > 0 || !dir;
+  $('empty').textContent = q ? 'Nothing matches your search.' : `No ${noun}s yet. Click the FreeRec icon in the toolbar to make one.`;
+}
 
 function needAccess(text, label, run) {
   $('need-text').textContent = text;
@@ -35,157 +146,85 @@ function needAccess(text, label, run) {
   $('need').hidden = false;
 }
 
-async function card(dir, handle) {
-  const file = await handle.getFile();
-  const el = document.createElement('div');
-  el.className = 'card item';
-  if (handle.name === highlight) el.classList.add('new');
-
-  const thumb = document.createElement('div');
-  thumb.className = 'thumb';
-  const v = document.createElement('video');
-  v.preload = 'metadata';
-  v.muted = true;
-  v.src = `${objectUrl(file)}#t=0.5`;
-  const dur = document.createElement('span');
-  dur.className = 'dur';
-  dur.hidden = true;
-  v.onloadedmetadata = () => {
-    if (Number.isFinite(v.duration)) {
-      dur.textContent = formatDuration(v.duration * 1000);
-      dur.hidden = false;
-    }
-  };
-  thumb.append(v, dur);
-
-  const meta = document.createElement('div');
-  meta.className = 'meta';
-  const name = document.createElement('div');
-  name.className = 'name';
-  name.textContent = handle.name;
-  name.title = handle.name;
-  const info = document.createElement('div');
-  info.className = 'muted small';
-  info.textContent = `${new Date(file.lastModified).toLocaleString()} · ${formatBytes(file.size)}`;
-  meta.append(name, info);
-
-  const actions = document.createElement('div');
-  actions.className = 'item-actions';
-  const rename = document.createElement('button');
-  rename.textContent = 'Rename';
-  const del = document.createElement('button');
-  del.textContent = 'Delete';
-  actions.append(rename, del);
-
-  rename.onclick = async (e) => {
-    e.stopPropagation();
-    const ext = handle.name.match(/\.[^.]+$/)?.[0] || '';
-    const next = prompt('New name', handle.name.slice(0, -ext.length || undefined));
-    if (!next) return;
-    const target = next.endsWith(ext) ? next : next + ext;
-    try {
-      if (handle.move) await handle.move(target);
-      else throw new Error('Renaming needs a newer Chrome version.');
-      render();
-    } catch (err) {
-      alert(`Rename failed: ${err.message}`);
-    }
-  };
-  del.onclick = async (e) => {
-    e.stopPropagation();
-    if (!confirm(`Delete “${handle.name}” from disk? This can't be undone.`)) return;
-    await dir.removeEntry(handle.name);
-    el.remove();
-  };
-  el.onclick = () => play(file, handle.name);
-  el.append(thumb, meta, actions);
-  return { el, modified: file.lastModified };
-}
-
-async function listVideos(dir) {
-  const out = [];
-  for await (const [name, handle] of dir.entries()) {
-    if (handle.kind === 'file' && VIDEO.test(name) && !name.startsWith('.')) out.push(handle);
-  }
-  return out;
-}
-
-async function renderFolder() {
+async function load() {
   $('need').hidden = true;
-  const dir = await getFolder();
+  dir = await getFolder();
+  entries = [];
   if (!dir) {
-    $('folder-title').textContent = 'Downloads/FreeRec';
-    $('empty').hidden = true;
-    needAccess('Recordings are going to your Downloads/FreeRec folder. Choose a folder to browse and play them here.', 'Choose folder…', async () => {
+    needAccess('Recordings are going to Downloads/FreeRec. Choose a folder to save into and browse it here.', 'Choose folder…', async () => {
       await setFolder(await pickFolder());
-      render();
+      load();
     });
+    dir = null;
+    render();
     return;
   }
-  $('folder-title').textContent = `📁 ${dir.name}`;
   if (!(await folderPermission(dir))) {
-    needAccess(`Allow FreeRec to read “${dir.name}” to show your recordings.`, 'Allow access', async () => {
-      if (await folderPermission(dir, true)) render();
+    const name = dir.name;
+    dir = null;
+    needAccess(`Allow FreeRec to read “${name}” to show your recordings.`, 'Allow access', async () => {
+      const d = await getFolder();
+      if (await folderPermission(d, true)) load();
     });
+    render();
     return;
   }
-  const cards = await Promise.all((await listVideos(dir)).map((h) => card(dir, h)));
-  cards.sort((a, b) => b.modified - a.modified);
-  $('grid').replaceChildren(...cards.map((c) => c.el));
-  $('empty').hidden = cards.length > 0;
-  if (highlight && !shownHighlight) {
-    shownHighlight = true;
-    const handle = await dir.getFileHandle(highlight).catch(() => null);
-    if (handle) play(await handle.getFile(), highlight);
+  for await (const [name, handle] of dir.entries()) {
+    if (handle.kind === 'file' && !name.startsWith('.') && (KINDS.videos.test(name) || KINDS.screenshots.test(name))) {
+      entries.push({ handle, file: await handle.getFile() });
+    }
+  }
+  render();
+  if (highlight && !load.shown) {
+    load.shown = true;
+    const hit = entries.find((x) => x.handle.name === highlight);
+    if (hit) openViewer(hit.file, highlight);
   }
 }
-
-let shownHighlight = false;
 
 async function renderOpfs() {
   const root = await navigator.storage.getDirectory();
-  const files = await listVideos(root);
+  const files = [];
+  for await (const [name, handle] of root.entries()) if (handle.kind === 'file' && KINDS.videos.test(name)) files.push(handle);
   $('opfs-section').hidden = files.length === 0;
   const rows = await Promise.all(files.map(async (h) => {
     const file = await h.getFile();
     const row = document.createElement('div');
     row.className = 'card row';
-    const label = document.createElement('div');
-    label.className = 'grow';
-    label.textContent = `${h.name} · ${formatBytes(file.size)}`;
-    const playBtn = document.createElement('button');
-    playBtn.textContent = 'Play';
-    playBtn.onclick = () => play(file, h.name);
-    const save = document.createElement('button');
-    save.textContent = 'Save to Downloads';
-    save.className = 'primary';
-    save.onclick = () => chrome.downloads.download({ url: objectUrl(file), filename: `FreeRec/${h.name}`, conflictAction: 'uniquify' });
-    const del = document.createElement('button');
-    del.textContent = 'Delete';
+    const label = Object.assign(document.createElement('div'), { className: 'grow', textContent: `${h.name} · ${formatBytes(file.size)}` });
+    const play = Object.assign(document.createElement('button'), { textContent: 'Play' });
+    play.onclick = () => openViewer(file, h.name);
+    const save = Object.assign(document.createElement('button'), { textContent: 'Save to Downloads', className: 'primary' });
+    save.onclick = () => chrome.downloads.download({ url: URL.createObjectURL(file), filename: `FreeRec/${h.name}`, conflictAction: 'uniquify' });
+    const del = Object.assign(document.createElement('button'), { textContent: 'Delete' });
     del.onclick = async () => {
       if (!confirm(`Delete “${h.name}”?`)) return;
       await root.removeEntry(h.name);
       renderOpfs();
     };
-    row.append(label, playBtn, save, del);
+    row.append(label, play, save, del);
     return row;
   }));
   $('opfs-grid').replaceChildren(...rows);
 }
 
-async function render() {
-  for (const u of urls) URL.revokeObjectURL(u);
-  urls.clear();
-  await Promise.all([renderFolder(), renderOpfs()]);
-}
+document.querySelectorAll('[data-tab]').forEach((b) => { b.onclick = () => { tab = b.dataset.tab; render(); }; });
+$('sort').onchange = render;
+$('search').oninput = render;
+$('change-folder').onclick = async () => {
+  try {
+    await setFolder(await pickFolder());
+    load();
+  } catch (e) {
+    if (e.name !== 'AbortError') alert(e.message);
+  }
+};
 
 const downloaded = params.get('downloaded');
 if (downloaded) {
-  const id = Number(downloaded);
   $('notice').textContent = `Saved “${highlight}” to Downloads/FreeRec. `;
-  const show = document.createElement('button');
-  show.textContent = 'Show in folder';
-  show.onclick = () => chrome.downloads.show(id);
+  const show = Object.assign(document.createElement('button'), { textContent: 'Show in folder' });
+  show.onclick = () => chrome.downloads.show(Number(downloaded));
   $('notice').append(show);
   $('notice').hidden = false;
 } else if (highlight) {
@@ -193,4 +232,4 @@ if (downloaded) {
   $('notice').hidden = false;
 }
 
-await render();
+await Promise.all([load(), renderOpfs()]);

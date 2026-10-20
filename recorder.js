@@ -1,6 +1,6 @@
 import {
   getSettings, getFolder, setFolder, folderPermission, pickFolder,
-  deviceIdForLabel, QUALITY, formatDuration, elapsedMs, formatBytes,
+  deviceIdForLabel, QUALITY, formatDuration, elapsedMs, formatBytes, recordingMode,
 } from './lib/store.js';
 import { prepareWebmHeader, durationBytes } from './lib/webm.js';
 
@@ -14,7 +14,7 @@ const CANCEL_BUTTON = { label: 'Cancel', kind: 'ghost', run: async () => { throw
 
 let myTabId = null;
 let session = null; // one recording at a time
-let rec = { status: 'idle' }; // mirrored to chrome.storage.local.rec for popup/overlay/badge
+let rec = { status: 'idle' }; // mirrored to chrome.storage.local.rec for panel/overlay/badge
 let timer = null;
 
 // --- shared state ----------------------------------------------------------
@@ -28,6 +28,28 @@ async function setRec(patch, replace = false) {
 function setStatus(title, detail = '') {
   $('status').textContent = title;
   $('detail').textContent = detail;
+}
+
+// This tab stays in the background unless it needs a click, Chrome's share
+// picker, or shows the camera-only preview.
+async function focusSelf() {
+  if (myTabId == null) return;
+  const tab = await chrome.tabs.update(myTabId, { active: true }).catch(() => null);
+  if (tab) await chrome.windows.update(tab.windowId, { focused: true }).catch(() => {});
+}
+
+async function returnTo(tabId) {
+  if (tabId == null || tabId === myTabId) return;
+  const tab = await chrome.tabs.update(tabId, { active: true }).catch(() => null);
+  if (tab) await chrome.windows.update(tab.windowId, { focused: true }).catch(() => {});
+}
+
+async function needsPrompt(name) {
+  try {
+    return (await navigator.permissions.query({ name })).state !== 'granted';
+  } catch {
+    return true;
+  }
 }
 
 function showError(e) {
@@ -54,6 +76,7 @@ function stopTimer() {
 
 function ask(text, buttons) {
   const s = session;
+  focusSelf();
   return new Promise((resolve, reject) => {
     const hide = () => { $('prompt').hidden = true; s.rejectPrompt = null; };
     $('prompt-text').textContent = text;
@@ -115,10 +138,14 @@ async function prepareTarget() {
   ]);
 }
 
-async function uniqueName(dir, ext) {
+function stamp(prefix = 'FreeRec') {
   const d = new Date();
   const p = (n) => String(n).padStart(2, '0');
-  const base = `FreeRec ${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} at ${p(d.getHours())}.${p(d.getMinutes())}.${p(d.getSeconds())}`;
+  return `${prefix} ${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} at ${p(d.getHours())}.${p(d.getMinutes())}.${p(d.getSeconds())}`;
+}
+
+async function uniqueName(dir, ext, prefix) {
+  const base = stamp(prefix);
   for (let i = 1; ; i++) {
     const name = i === 1 ? `${base}.${ext}` : `${base} (${i}).${ext}`;
     try {
@@ -162,6 +189,7 @@ async function ensureCameraPermission() {
     if ((await navigator.permissions.query({ name: 'camera' })).state === 'granted') return true;
   } catch { /* query unsupported */ }
   try {
+    await focusSelf();
     const s = await navigator.mediaDevices.getUserMedia({ video: true });
     s.getTracks().forEach((t) => t.stop());
     return true;
@@ -173,11 +201,30 @@ async function ensureCameraPermission() {
   }
 }
 
-function pickDesktop(q) {
+// "Current tab": capture the tab the panel was opened on, no picker needed.
+async function captureTab(tabId, q) {
+  const streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: tabId, consumerTabId: myTabId });
+  const source = { chromeMediaSource: 'tab', chromeMediaSourceId: streamId };
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: { mandatory: source },
+    video: { mandatory: { ...source, maxWidth: q.width, maxHeight: q.height, maxFrameRate: 30 } },
+  });
+  // Tab capture silences the tab for you; play its sound back.
+  if (stream.getAudioTracks().length) {
+    const ctx = new AudioContext();
+    ctx.createMediaStreamSource(new MediaStream(stream.getAudioTracks())).connect(ctx.destination);
+    ctx.resume().catch(() => {});
+    session.playbackCtx = ctx;
+  }
+  return stream;
+}
+
+async function pickDesktop(q, sources) {
   const s = session;
+  await focusSelf();
   return new Promise((resolve, reject) => {
     s.desktopRequest = chrome.desktopCapture.chooseDesktopMedia(
-      ['screen', 'window', 'tab', 'audio'],
+      sources,
       async (streamId, options) => {
         s.desktopRequest = null;
         if (!streamId) return reject(new Canceled());
@@ -277,9 +324,10 @@ async function start(returnTabId) {
   try {
     const settings = await getSettings();
     s.settings = settings;
-    const cameraOnly = settings.mode === 'camera';
-    let bubble = settings.mode === 'screen-camera';
-    await setRec({ status: 'preparing', mode: settings.mode }, true);
+    const mode = recordingMode(settings);
+    const cameraOnly = mode === 'camera';
+    let bubble = mode === 'screen-camera';
+    await setRec({ status: 'preparing', mode }, true);
     setStatus('Getting ready…');
 
     s.target = await prepareTarget();
@@ -288,6 +336,7 @@ async function start(returnTabId) {
     let mic = null;
     if (settings.micEnabled) {
       try {
+        if (await needsPrompt('microphone')) await focusSelf();
         mic = await getMic(settings.micLabel);
       } catch (e) {
         await ask(`Microphone unavailable (${e.name}). Record without microphone?`, [
@@ -301,14 +350,25 @@ async function start(returnTabId) {
 
     const q = QUALITY[settings.quality] || QUALITY['1080'];
     if (cameraOnly) {
+      await focusSelf();
       setStatus('Starting camera…');
       s.video = await getCamera(settings.cameraLabel, q);
       showPreview(s.video);
     } else {
       if (bubble) bubble = await ensureCameraPermission();
       check();
-      setStatus('Choose what to share', 'Pick a screen, window or tab in the Chrome dialog. Tick “Share audio” to include its sound.');
-      s.video = await pickDesktop(q);
+      if (settings.source === 'tab' && returnTabId != null && returnTabId !== myTabId) {
+        try {
+          s.video = await captureTab(returnTabId, q);
+        } catch (e) {
+          console.warn('FreeRec: tab capture failed, falling back to the picker', e);
+        }
+      }
+      if (!s.video) {
+        setStatus('Choose what to share', 'Pick what to record in the Chrome dialog. Tick “Share audio” to include its sound.');
+        const sources = { screen: ['screen', 'audio'], window: ['window', 'audio'], tab: ['tab', 'audio'] }[settings.source];
+        s.video = await pickDesktop(q, sources || ['screen', 'window', 'tab', 'audio']);
+      }
     }
     check();
 
@@ -324,9 +384,7 @@ async function start(returnTabId) {
     s.video.getVideoTracks()[0]?.addEventListener('ended', () => stop()); // "Stop sharing"
     check();
 
-    if (!cameraOnly && returnTabId != null && returnTabId !== myTabId) {
-      await chrome.tabs.update(returnTabId, { active: true }).catch(() => {});
-    }
+    if (!cameraOnly) await returnTo(returnTabId);
     const overlay = { cameraOn: bubble, cameraLabel: settings.cameraLabel, bubbleSize: settings.bubbleSize };
     if (settings.countdown) {
       await setRec({ status: 'countdown', countdownEnd: Date.now() + 3000, ...overlay });
@@ -408,10 +466,41 @@ function resume() {
   setStatus('Recording', `Saving to ${s.target.label}/${s.name}`);
 }
 
+async function restart() {
+  const s = session;
+  if (!s?.recorder || s.stopping || s.restarting || rec.status === 'countdown') return;
+  s.restarting = true;
+  const old = s.recorder;
+  old.ondataavailable = null;
+  old.onstop = null;
+  old.onerror = null;
+  if (old.state !== 'inactive') old.stop();
+  stopTimer();
+  $('controls').hidden = true;
+  await discardFile(s);
+  s.name = await uniqueName(s.target.dir, s.ext);
+  s.fileHandle = await s.target.dir.getFileHandle(s.name, { create: true });
+  s.writable = await s.fileHandle.createWritable();
+  s.bytes = 0;
+  s.chain = Promise.resolve();
+  s.durationInfo = null;
+  s.writeError = null;
+  s.restarting = false;
+  if (s.settings.countdown) {
+    await setRec({ status: 'countdown', countdownEnd: Date.now() + 3000, startedAt: null, pausedTotal: 0, pausedAt: null });
+    setStatus('Restarting…');
+    await countdown(s, 3000);
+    if (session !== s || s.canceled) return;
+    await sleep(150);
+    if (session !== s || s.canceled) return;
+  }
+  begin(s, QUALITY[s.settings.quality] || QUALITY['1080']);
+}
+
 function stop() {
   const s = session;
   if (!s) return;
-  if (!s.recorder) { cancel(); return; }
+  if (!s.recorder || rec.status === 'countdown') { cancel(); return; }
   if (s.stopping) return;
   s.stopping = true;
   s.durationMs = elapsedMs(rec);
@@ -453,6 +542,7 @@ async function teardown(s, discard) {
   $('preview').srcObject = null;
   stopTracks(s);
   s.audioCtx?.close().catch(() => {});
+  s.playbackCtx?.close().catch(() => {});
   if (discard) await discardFile(s);
   await setRec({ status: 'idle' }, true);
 }
@@ -518,6 +608,36 @@ function addRecent(entry) {
   $('recent').hidden = false;
 }
 
+// --- screenshots -------------------------------------------------------------
+
+async function saveScreenshot({ dataUrl, rect, dpr = 1 }) {
+  const img = await createImageBitmap(await (await fetch(dataUrl)).blob());
+  let [sx, sy, sw, sh] = [0, 0, img.width, img.height];
+  if (rect) {
+    sx = Math.max(0, Math.round(rect.x * dpr));
+    sy = Math.max(0, Math.round(rect.y * dpr));
+    sw = Math.min(img.width - sx, Math.round(rect.w * dpr));
+    sh = Math.min(img.height - sy, Math.round(rect.h * dpr));
+  }
+  const canvas = new OffscreenCanvas(sw, sh);
+  canvas.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+  const blob = await canvas.convertToBlob({ type: 'image/png' });
+
+  const dir = await getFolder();
+  if (dir && (await folderPermission(dir))) {
+    const name = await uniqueName(dir, 'png', 'Screenshot');
+    const w = await (await dir.getFileHandle(name, { create: true })).createWritable();
+    await w.write(blob);
+    await w.close();
+    return { name, folder: dir.name };
+  }
+  const name = `${stamp('Screenshot')}.png`;
+  const url = URL.createObjectURL(blob);
+  const downloadId = await chrome.downloads.download({ url, filename: `FreeRec/${name}`, conflictAction: 'uniquify', saveAs: false });
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  return { name, folder: 'Downloads/FreeRec', downloadId };
+}
+
 // --- wiring ----------------------------------------------------------------
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
@@ -530,6 +650,10 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     case 'resume': resume(); break;
     case 'togglePause': rec.status === 'paused' ? resume() : pause(); break;
     case 'cancel': cancel(); break;
+    case 'restart': restart(); break;
+    case 'saveScreenshot':
+      saveScreenshot(msg).then(sendResponse, (e) => sendResponse({ error: e?.message || String(e) }));
+      return true;
   }
   sendResponse({ ok: true });
 });

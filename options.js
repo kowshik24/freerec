@@ -1,4 +1,4 @@
-import { getSettings, saveSettings, getFolder, setFolder, clearFolder, folderPermission, pickFolder } from './lib/store.js';
+import { getSettings, saveSettings, getFolder, setFolder, clearFolder, folderPermission, pickFolder, mp4Supported } from './lib/store.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -72,6 +72,11 @@ const settings = await getSettings();
 $('countdown').checked = settings.countdown;
 $('keep').checked = settings.keepRecorderTab;
 $('bubble').value = settings.bubbleSize;
+$('quality').value = settings.quality;
+$('format').value = settings.format;
+if (!mp4Supported()) $('format').querySelector('[value="mp4"]').disabled = true;
+$('quality').onchange = () => saveSettings({ quality: $('quality').value });
+$('format').onchange = () => saveSettings({ format: $('format').value });
 $('countdown').onchange = () => saveSettings({ countdown: $('countdown').checked });
 $('keep').onchange = () => saveSettings({ keepRecorderTab: $('keep').checked });
 $('bubble').onchange = () => saveSettings({ bubbleSize: $('bubble').value });
