@@ -1,204 +1,461 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-type="software" data-radius="soft" data-ground="sage" data-buttons="arrow" data-motion>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FreeRec: free, private screen &amp; camera recorder for Chrome</title>
-  <meta name="description" content="Record your screen, a window or a tab with a camera bubble, effects and a built-in canvas. No account, no upload, no watermark, no time limit. Open source.">
-  <link rel="icon" href="site/icon.png">
-  <link rel="canonical" href="https://kowshik24.github.io/freerec/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FreeRec: a free screen and camera recorder for Chrome</title>
+<meta name="description" content="Record a screen, a window or one tab with a webcam bubble. Videos stream into a folder on your computer, with no account, upload or time limit.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="FreeRec">
+<meta property="og:title" content="FreeRec: a free screen and camera recorder for Chrome">
+<meta property="og:description" content="Videos stream into a folder on your computer. No account, no upload, no watermark, no time limit.">
+<meta property="og:url" content="https://kowshik24.github.io/freerec/">
+<meta property="og:image" content="https://kowshik24.github.io/freerec/site/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:video" content="https://kowshik24.github.io/freerec/freerec-demo.mp4">
+<meta property="og:video:type" content="video/mp4">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://kowshik24.github.io/freerec/site/og.png">
+<link rel="icon" href="site/icon.png" type="image/png">
+<meta name="theme-color" content="#ffffff">
+<link rel="canonical" href="https://kowshik24.github.io/freerec/">
+<meta name="site-kind" content="software">
+<meta name="page-type" content="software">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400..700&family=JetBrains+Mono:wght@400..500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/system.css">
+<link rel="stylesheet" href="assets/ui/cards.css">
+<link rel="stylesheet" href="assets/motion/motion.css">
+<link rel="stylesheet" href="assets/backgrounds/backgrounds.css">
+<link rel="stylesheet" href="assets/layout/layout.css">
+<link rel="stylesheet" href="assets/icons/icon.css">
+<style>
+:root {
+  --p-bg: #ffffff; --p-surface: #f4f4f4; --p-ink: #111111; --p-muted: #6b6b6b;
+  --p-accent: #1a4be0; --p-accent-ink: #ffffff; --p-action: #1a4be0; --p-action-ink: #ffffff;
+  --p-inv-bg: #111111; --p-inv-surface: #1e1e1e; --p-inv-ink: #ffffff; --p-inv-muted: #9a9a9a;
+  --p-inv-accent: #ffffff; --p-inv-accent-ink: #111111; --p-inv-action: #ffffff; --p-inv-action-ink: #111111;
+  --font-display: "Host Grotesk", system-ui, sans-serif;
+  --font-text: "Host Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --display-weight: 500;
+  --display-tracking: -0.035em;
+  --display-tracking-xl: -0.04em;
+}
+</style>
+<link rel="stylesheet" href="assets/ui/base.css">
+<link rel="stylesheet" href="assets/ui/window/fragment.css">
+<link rel="stylesheet" href="assets/ui/toggles/fragment.css">
+<link rel="stylesheet" href="assets/ui/files/fragment.css">
+<link rel="stylesheet" href="assets/diagrams/diagram.css">
+<script>document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),700)</script>
+<script src="assets/backgrounds/backgrounds.js"></script>
+<script>document.documentElement.classList.add('mo-js');setTimeout(()=>document.documentElement.classList.add('mo-safe'),2500)</script>
+<link rel="modulepreload" href="assets/moments/moments.js">
+<link rel="modulepreload" href="assets/moments/lib.js">
+<link rel="modulepreload" href="assets/moments/counter-rolls/moment.js">
+<style>
+  /* hero art: the lit sage ground with one soft light, a window of the tab being recorded, the recording card */
+  .hero__art { background:
+      radial-gradient(70% 60% at 18% 12%, color-mix(in oklab, var(--ground-surface) 80%, white), transparent 70%),
+      radial-gradient(60% 50% at 90% 100%, color-mix(in oklab, var(--ground-bg) 80%, var(--ground-accent)), transparent 70%),
+      var(--ground-bg); }
+  .hero__art > .ly-piece--note { left: var(--s-6); bottom: var(--s-6); width: 300px; z-index: 2; }
+  .d-win { background: #fff; color: #16181a; border-radius: 12px; overflow: hidden; font: 400 14px/1.4 var(--font-text);
+    box-shadow: 0 0 0 1px rgb(0 0 0 / .07), 0 24px 60px -28px rgb(0 0 0 / .45); text-align: left; }
+  .d-win__bar { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 14px; border-bottom: 1px solid rgb(0 0 0 / .07); font-size: 13px; color: #5d6268; }
+  .d-win__dots { display: flex; gap: 6px; } .d-win__dots i { width: 10px; height: 10px; border-radius: 50%; background: #dcdfe2; }
+  .d-win__rec { margin-left: auto; margin-right: var(--ly-cut-room); display: inline-flex; align-items: center; gap: 6px; color: #a3271b; font-weight: 500; }
+  .d-win__rec::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #e5484d; }
+  .d-win__shot { display: block; width: 100%; aspect-ratio: 1200 / 581; object-fit: cover; object-position: left top; }
+  .d-card { background: #fff; color: #16181a; border-radius: 12px; padding: 14px 16px; font: 400 14px/1.4 var(--font-text); text-align: left;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / .07), 0 18px 40px -20px rgb(0 0 0 / .4); }
+  .d-card__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+  .d-card h5 { margin: 0; font: 500 15px/1.3 var(--font-text); }
+  .d-chip { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 99px; font-size: 13px; font-weight: 500; background: #e7f4ec; color: #17673f; white-space: nowrap; }
+  .d-chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .d-note__line { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 13px; color: #3d4247; border-top: 1px solid rgb(0 0 0 / .06); }
+  .d-note__line:first-of-type { border-top: 0; }
+  .d-note__line i { width: 18px; height: 18px; border-radius: 50%; flex: none; display: grid; place-items: center; background: #e7f4ec; color: #17673f; font-style: normal; font-size: 13px; font-weight: 500; }
+  .d-note__line b { font-weight: 500; color: #16181a; }
+  .hero__proof { font-size: var(--t-small); color: var(--muted); }
 
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="FreeRec">
-  <meta property="og:title" content="FreeRec: free, private screen & camera recorder for Chrome">
-  <meta property="og:description" content="No account, no upload, no watermark, no time limit. Everything is saved straight to a folder on your computer.">
-  <meta property="og:url" content="https://kowshik24.github.io/freerec/">
-  <meta property="og:image" content="https://kowshik24.github.io/freerec/site/og.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:video" content="https://kowshik24.github.io/freerec/freerec-demo.mp4">
-  <meta property="og:video:type" content="video/mp4">
-  <meta property="og:video:width" content="1920">
-  <meta property="og:video:height" content="1080">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://kowshik24.github.io/freerec/site/og.png">
+  /* app-frame: the library's list beside the open recording */
+  .app.ui { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); margin-top: var(--s-7); background: var(--u-bg); border: 1px solid var(--u-border); border-radius: var(--u-r); box-shadow: var(--u-shadow); }
+  .app > .app__pane { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
+  .app > .app__pane + .app__pane { border-left: 1px solid var(--u-line); }
+  .app > .app__pane > .ui-panel { width: 100%; border: 0; border-radius: 0; box-shadow: none; }
+  .app > .app__pane--list::after { content: ""; position: absolute; inset: auto 0 0 0; height: 64px; background: linear-gradient(transparent, var(--u-bg)); pointer-events: none; }
+  .player { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 100%; }
+  .player__head { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--u-line); font-size: 13px; color: var(--u-muted, #5d6268); }
+  .player__head b { font-weight: 500; color: var(--u-ink, #16181a); }
+  .player__head span:last-child { margin-left: auto; }
+  .player__stage { position: relative; min-height: 0; background: #0f0f10; display: grid; place-items: center; }
+  .player__stage video { display: block; width: 100%; height: 100%; object-fit: contain; background: #0f0f10; }
+  @media (min-width: 1024px) and (max-width: 1279px) { .app.ui { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); } }
+  @media (max-width: 1023px) {
+    .app.ui { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+    .app > .app__pane--list { max-height: 252px; }
+    .app > .app__pane--list::after { display: none; }
+    .app .ui-win__side { display: none; }
+    .app .ui-win__body { grid-template-columns: minmax(0, 1fr); }
+    .app > .app__pane + .app__pane { border-left: 0; border-top: 1px solid var(--u-line); }
+    .app .ui-win__row:nth-child(n+5) { display: none; }
+  }
+  @media (max-width: 639px) {
+    .app.ui { grid-template-rows: minmax(0, 1fr); }
+    .app > .app__pane--list { display: none; }
+    .app > .app__pane + .app__pane { border-top: 0; }
+  }
+  .ui-win__crumb img { width: 16px; height: 16px; border-radius: 4px; }
 
-  <style>
-    :root {
-      --ink: #17142e; --text: #2a2b33; --muted: #646775; --line: #e6e4f2;
-      --brand: #5b4cf0; --brand-2: #8a5cf6; --pink: #e255a1; --bg: #f7f6fc;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); line-height: 1.55; }
-    a { color: var(--brand); }
-    img { max-width: 100%; display: block; }
-    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
-
-    header.hero {
-      color: #fff; padding: 22px 0 140px; position: relative; overflow: hidden;
-      background:
-        radial-gradient(900px 520px at 15% 0%, #7a5cf6 0%, transparent 60%),
-        radial-gradient(800px 520px at 95% 100%, var(--pink) 0%, transparent 55%),
-        var(--ink);
-    }
-    nav { display: flex; align-items: center; gap: 12px; }
-    nav .brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-weight: 800; font-size: 20px; }
-    nav .brand img { width: 34px; height: 34px; border-radius: 9px; }
-    nav .links { margin-left: auto; display: flex; gap: 22px; }
-    nav .links a { color: rgb(255 255 255 / 82%); text-decoration: none; font-weight: 600; font-size: 15px; }
-    nav .links a:hover { color: #fff; }
-    .hero-body { text-align: center; padding-top: 70px; }
-    .hero h1 { font-size: clamp(38px, 6vw, 68px); line-height: 1.05; margin: 0 0 18px; letter-spacing: -0.03em; }
-    .hero h1 span { background: linear-gradient(90deg, #c9bcff, #ffb3dc); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .hero p.lead { font-size: clamp(17px, 2.2vw, 21px); max-width: 680px; margin: 0 auto; opacity: .9; }
-    .chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 26px 0 30px; }
-    .chips span { border: 1px solid rgb(255 255 255 / 28%); background: rgb(255 255 255 / 8%); border-radius: 999px; padding: 6px 14px; font-size: 14px; font-weight: 600; }
-    .cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
-    .btn { display: inline-flex; align-items: center; gap: 9px; padding: 13px 22px; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 16px; transition: transform .15s, box-shadow .15s; }
-    .btn:hover { transform: translateY(-1px); }
-    .btn svg { width: 19px; height: 19px; }
-    .btn.primary { background: #fff; color: var(--ink); box-shadow: 0 10px 30px rgb(0 0 0 / 25%); }
-    .btn.ghost { color: #fff; border: 1px solid rgb(255 255 255 / 35%); background: rgb(255 255 255 / 6%); }
-
-    .video-wrap { margin-top: -100px; position: relative; z-index: 1; }
-    .video-card { background: #0f0e1d; border-radius: 20px; padding: 10px; box-shadow: 0 30px 80px rgb(23 20 46 / 35%); }
-    .video-card video { width: 100%; border-radius: 12px; display: block; aspect-ratio: 16 / 9; background: #000; }
-    .video-note { text-align: center; color: var(--muted); font-size: 14px; margin: 12px 0 0; }
-
-    section { padding: 84px 0 0; }
-    section h2 { font-size: clamp(28px, 3.6vw, 38px); letter-spacing: -0.02em; margin: 0 0 10px; color: var(--ink); text-align: center; }
-    section .sub { text-align: center; color: var(--muted); max-width: 620px; margin: 0 auto 38px; font-size: 17px; }
-
-    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
-    .feature { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
-    .feature .ic { width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; background: #efeafe; color: var(--brand); margin-bottom: 12px; }
-    .feature .ic svg { width: 22px; height: 22px; }
-    .feature h3 { margin: 0 0 6px; font-size: 17px; color: var(--ink); }
-    .feature p { margin: 0; color: var(--muted); font-size: 15px; }
-
-    .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; }
-    .shots figure { margin: 0; background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
-    .shots img { width: 100%; aspect-ratio: 1920 / 930; object-fit: cover; }
-    .shots figcaption { padding: 12px 16px; font-weight: 600; color: var(--ink); font-size: 15px; }
-
-    .steps { counter-reset: s; display: grid; gap: 14px; max-width: 760px; margin: 0 auto; padding: 0; list-style: none; }
-    .steps li { counter-increment: s; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px 16px 62px; position: relative; }
-    .steps li::before { content: counter(s); position: absolute; left: 16px; top: 14px; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--brand); color: #fff; font-weight: 800; }
-    code { background: #efeafe; color: #3f31c9; padding: 2px 6px; border-radius: 6px; font-size: .92em; }
-
-    .privacy { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 34px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 22px; }
-    .privacy div b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 4px; }
-    .privacy div span { color: var(--muted); font-size: 15px; }
-
-    .final { margin: 84px 0 0; padding: 60px 24px; text-align: center; color: #fff; border-radius: 24px;
-      background: radial-gradient(700px 400px at 10% 0%, #7a5cf6, transparent 60%), radial-gradient(600px 400px at 100% 100%, var(--pink), transparent 55%), var(--ink); }
-    .final h2 { color: #fff; }
-    .final p { opacity: .88; margin: 0 0 26px; font-size: 17px; }
-    footer { text-align: center; color: var(--muted); font-size: 14px; padding: 40px 24px 50px; }
-
-    @media (max-width: 640px) { .shots { grid-template-columns: 1fr; } nav .links { display: none; } .hero { padding-bottom: 110px; } .video-wrap { margin-top: -80px; } }
-  </style>
+  /* card groups */
+  #features .panel { --p-h: 300px; }
+  .offline-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-6) var(--s-5); }
+  .offline-frame { min-height: 520px; }
+  @media (min-width: 640px) and (max-width: 1279px) { #install { --h: 2; } }
+  @media (min-width: 640px) and (max-width: 1023px) { #features .grid > .card { grid-column: 1 / -1; } #features .panel { --p-h: 220px; } }
+  #questions .wrap > .grid + .grid > .faq { margin-top: 0; }
+  #questions .wrap > .grid + .grid > .faq > .faq__item:first-child { border-top: 0; }
+  @media (max-width: 1023px) { .offline-frame { min-height: 360px; } }
+  #install .panel { --p-h: 336px; }
+  @media (max-width: 639px) { #features .panel { --p-h: 100px; } #install .panel { --p-h: 270px; }
+    .offline-stats { gap: var(--s-6) var(--s-3); } }
+  .shot-panel .frame__img { object-position: left top; }
+  .gh-link { display: inline-flex; align-items: center; gap: var(--s-2); }
+  .gh-link img { flex: none; }
+</style>
 </head>
 <body>
-  <header class="hero">
-    <div class="wrap">
-      <nav>
-        <a class="brand" href="#"><img src="site/icon.png" alt="">FreeRec</a>
-        <div class="links">
-          <a href="#demo">Demo</a>
-          <a href="#features">Features</a>
-          <a href="#install">Install</a>
-          <a href="https://github.com/kowshik24/freerec">GitHub</a>
-        </div>
-      </nav>
-      <div class="hero-body">
-        <h1>Record your screen.<br><span>Keep it yours.</span></h1>
-        <p class="lead">FreeRec is a free, private screen and camera recorder for Chrome. Record your screen, a window or a tab with a camera bubble, effects and a built-in canvas. Videos are saved straight to a folder on your computer.</p>
-        <div class="chips"><span>No account</span><span>No upload</span><span>No watermark</span><span>No time limit</span><span>Open source</span></div>
-        <div class="cta">
-          <a class="btn primary" href="https://github.com/kowshik24/freerec/releases/latest">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
-            Download for Chrome
-          </a>
-          <a class="btn ghost" href="https://github.com/kowshik24/freerec">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
-            View on GitHub
-          </a>
+<!-- type: software (a free Chrome extension; site-kind software)
+     deal: hero collage, nav nav-centre, close close-type, footer footer-columns, rhythm surface-pairs,
+           buttons arrow, mark: the client's own icon (icons/icon128.png), ground sage (lit, hero art only)
+     palette white-link-blue (a white page with a blue action: the plain, document-like look of a browser tool), type host
+     moments: counter-rolls on #offline; order hero, demo, offline, features, questions, install (surface band), close (the four facts that sell it: 0 requests, 4 modes, 10 filters, 6 templates)
+     client slot: the demo video (freerec-demo.mp4, 1920x1080) in the app-frame's open pane -->
+
+<header class="nav nav--centre">
+  <div class="wrap nav__bar">
+    <a class="skip-link" href="#top">Skip to content</a>
+    <a class="nav__logo" href="#top"><img src="site/icon.png" alt="" width="28" height="28" style="border-radius:7px">FreeRec</a>
+    <nav class="nav__links" aria-label="Main">
+      <div class="nav__item"><a class="nav__link" href="#demo">Demo</a></div>
+      <div class="nav__item">
+        <a class="nav__link" href="#features">Features <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <div class="nav__menu">
+          <div class="wrap grid">
+            <div class="menu-col span-3">
+              <p class="t-label">Record</p>
+              <a href="#features">Screen, window or tab<span>Four capture modes</span></a>
+              <a href="#features">Camera effects<span>Filters and backgrounds</span></a>
+            </div>
+            <div class="menu-col span-3">
+              <p class="t-label">Also</p>
+              <a href="#features">Screenshots<span>An area or the whole tab</span></a>
+              <a href="#features">Canvas<span>Six templates to present on</span></a>
+            </div>
+            <a class="menu-card span-3 start-10" href="#demo">
+              <div class="panel"><img class="frame__img" src="site/panel.jpg" srcset="site/panel-640.jpg 640w, site/panel.jpg 1200w" sizes="(max-width: 639px) 342px, 1200px" width="1200" height="581" alt="The FreeRec panel open on a web page" loading="lazy"></div>
+              <span class="t-card">Watch the demo</span>
+              <span class="t-small muted">Two minutes, start to finish</span>
+            </a>
+          </div>
         </div>
       </div>
+      <div class="nav__item"><a class="nav__link" href="#install">Install</a></div>
+      <div class="nav__item"><a class="nav__link" href="#questions">Questions</a></div>
+    </nav>
+    <div class="nav__actions">
+      <a class="btn btn--primary" href="https://github.com/kowshik24/freerec/releases/latest">Download for Chrome<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
     </div>
-  </header>
-
-  <div class="wrap video-wrap" id="demo">
-    <div class="video-card">
-      <video controls playsinline preload="metadata" poster="site/poster.jpg">
-        <source src="freerec-demo.mp4" type="video/mp4">
-        Your browser can't play this video. <a href="freerec-demo.mp4">Download the demo (MP4)</a>.
-      </video>
-    </div>
-    <p class="video-note">A 2-minute tour: recording a tab with the camera bubble, effects, the library, screenshots and the canvas.</p>
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Menu">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
   </div>
+</header>
 
-  <main class="wrap">
-    <section id="features">
-      <h2>Everything you need to record</h2>
-      <p class="sub">Free, with no limits, and it runs entirely on your computer.</p>
-      <div class="features">
-        <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div><h3>Four capture modes</h3><p>Full screen, a window, the current tab (no picker), or camera only.</p></div>
-        <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.4-2 3.3-3 5.5-3s4.1 1 5.5 3"/></svg></div><h3>Camera bubble</h3><p>A round, draggable, resizable webcam overlay that's captured in the video.</p></div>
-        <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1 0 1.5-.8 1.5-1.5 0-1.2-1-1.5-1-2.5 0-.8.7-1.5 1.5-1.5H16a5 5 0 0 0 5-5c0-4.1-4-7.5-9-7.5z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/></svg></div><h3>On-device effects</h3><p>Background blur, virtual backgrounds and 10 colour filters. Nothing leaves your machine.</p></div>
-        <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h6M7 14h10"/></svg></div><h3>Built-in canvas</h3><p>A slide-like page with backgrounds, text layouts and six templates to present on.</p></div>
-        <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></div><h3>Recording controls</h3><p>3-2-1 countdown, then pause, resume, restart, discard and finish from a floating bar.</p></div>
-        <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/></svg></div><h3>Screenshots</h3><p>Capture a custom area or the whole visible tab as PNG.</p></div>
-        <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div><h3>Saves to your folder</h3><p>Pick any folder once. Each recording streams into it as you record.</p></div>
-        <div class="feature"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10 8 6 4-6 4z"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg></div><h3>Proper video files</h3><p>WebM (VP9/Opus) with a real, seekable duration. MP4 (H.264) where Chrome supports it.</p></div>
+<main id="top">
+  <section class="hero hero--collage" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text grid hero__grid">
+      <div class="hero__text span-5">
+        <h1 id="hero-h">Free screen and camera recorder for Chrome</h1>
+        <p class="hero__lead">Record a screen, a window or one tab with your webcam in a round bubble. Each video streams into a folder you pick, with no account and no upload.</p>
+        <div class="btn-row"><a class="btn btn--primary" href="https://github.com/kowshik24/freerec/releases/latest">Download for Chrome<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a><a class="btn btn--secondary" href="#demo">Watch the demo</a></div>
+        <p class="hero__proof">Version 1.1.0 for Chrome 116 or newer, MIT licence.</p>
       </div>
-    </section>
-
-    <section>
-      <h2>A closer look</h2>
-      <p class="sub">Clean controls that stay out of the way of what you're presenting.</p>
-      <div class="shots">
-        <figure><img src="site/effects.jpg" alt="Camera filters in the effects panel" loading="lazy"><figcaption>Filters &amp; virtual backgrounds</figcaption></figure>
-        <figure><img src="site/recording.jpg" alt="Floating recording control bar" loading="lazy"><figcaption>Floating recording controls</figcaption></figure>
-        <figure><img src="site/screenshot.jpg" alt="Screenshot mode" loading="lazy"><figcaption>Area or full-tab screenshots</figcaption></figure>
-        <figure><img src="site/canvas.jpg" alt="Canvas template with camera bubble" loading="lazy"><figcaption>Present on the built-in canvas</figcaption></figure>
+      <div class="hero__art span-6 start-7" role="img" aria-label="A tab being recorded with FreeRec: the control bar at the left, the webcam bubble at the bottom, and a card showing the recording saving to Downloads">
+        <div class="ly-piece ly-piece--main d-win" aria-hidden="true">
+          <div class="d-win__bar"><span class="d-win__dots"><i></i><i></i><i></i></span><span>Q4 product review</span><span class="d-win__rec">Recording</span></div>
+          <img class="d-win__shot" src="site/recording.jpg" srcset="site/recording-640.jpg 640w, site/recording.jpg 1200w" sizes="(max-width: 639px) 342px, 1200px" width="1200" height="581" alt="" fetchpriority="high" data-source="client" data-subject="FreeRec recording a tab">
+        </div>
+        <div class="ly-piece ly-piece--note d-card" aria-hidden="true" data-ly-steps="700">
+          <div class="d-card__row"><h5>Current tab, 0:42</h5><span class="d-chip" data-step data-step-at="4">Saved</span></div>
+          <div class="d-note__line" data-step><i>✓</i><span><b>Camera bubble</b> and microphone on</span></div>
+          <div class="d-note__line" data-step><i>✓</i><span>Paused once, <b>8 s</b> left out</span></div>
+          <div class="d-note__line" data-step><i>✓</i><span>Written to <b>Downloads/FreeRec</b></span></div>
+        </div>
       </div>
-    </section>
+    </div></div>
+  </section>
 
-    <section id="install">
-      <h2>Install in a minute</h2>
-      <p class="sub">FreeRec isn't on the Chrome Web Store yet, so you load it as an unpacked extension. Requires Chrome 116 or newer.</p>
-      <ol class="steps">
-        <li>Download <code>freerec-&lt;version&gt;.zip</code> from the <a href="https://github.com/kowshik24/freerec/releases/latest">latest release</a> and unzip it somewhere permanent.</li>
-        <li>Open <code>chrome://extensions</code> and turn on <b>Developer mode</b> (top-right).</li>
-        <li>Click <b>Load unpacked</b> and select the <code>freerec</code> folder (the one with <code>manifest.json</code>).</li>
-        <li>Pin FreeRec from the puzzle-piece menu, then click it or press <code>Alt+Shift+O</code> to start.</li>
-      </ol>
-    </section>
-
-    <section>
-      <h2>Private by design</h2>
-      <p class="sub">Your recordings never touch a server.</p>
-      <div class="privacy">
-        <div><b>No network access</b><span>FreeRec makes no requests. The code, WASM runtime and ML model are all bundled.</span></div>
-        <div><b>No accounts or analytics</b><span>No sign-up, no telemetry, no tracking.</span></div>
-        <div><b>Your files, your folder</b><span>Recordings and screenshots exist only in the folder you choose.</span></div>
-        <div><b>Camera only when needed</b><span>Used only while the panel, bubble or a recording is active.</span></div>
+  <section class="section" id="demo" aria-labelledby="demo-h">
+    <div class="wrap">
+      <div class="grid">
+        <h2 id="demo-h" class="span-5">The FreeRec library, with every take ready to play</h2>
+        <div class="span-6 start-7 stack-4"><p>Finish a recording and My recordings opens with the new video playing. Rename, delete or point FreeRec at another folder from the same window.</p><a class="link" href="freerec-demo.mp4" download>Download the demo video</a></div>
       </div>
-    </section>
-
-    <div class="final">
-      <h2>Start recording for free</h2>
-      <p>Open source under the MIT license. No limits, no catches.</p>
-      <div class="cta">
-        <a class="btn primary" href="https://github.com/kowshik24/freerec/releases/latest">Download for Chrome</a>
-        <a class="btn ghost" href="https://github.com/kowshik24/freerec">Star on GitHub</a>
+      <div class="ui app fill" role="img" aria-label="FreeRec's library: a list of recordings beside the open one, the demo video" data-ui-pause-host>
+        <div class="app__pane app__pane--list">
+          <div class="ui ui-panel ui-win" data-ui="window" data-open="New" data-work="Saving" data-done="Saved">
+            <div class="ui-win__bar">
+              <span class="ui-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="ui-win__crumb"><img src="site/icon.png" alt="" width="16" height="16" loading="lazy">My recordings <i>/</i> <b>Videos</b></span>
+              <span class="ui-spacer"></span>
+              <span class="ui-win__search" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><span class="ui-win__ph">Search</span></span>
+            </div>
+            <div class="ui-win__body">
+              <nav class="ui-win__side" aria-hidden="true">
+                <span class="ui-win__nav is-on"><svg class="ui-icon" viewBox="0 0 16 16"><rect x="2.5" y="4" width="8" height="8" rx="1.5"/><path d="m10.5 7 3-2v6l-3-2"/></svg>Videos<em>12</em></span>
+                <span class="ui-win__nav"><svg class="ui-icon" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="8" cy="8" r="2"/></svg>Screenshots<em>8</em></span>
+                <span class="ui-win__label">Folder</span>
+                <span class="ui-win__nav"><span class="ui-win__hash">/</span>Downloads</span>
+              </nav>
+              <div class="ui-win__main">
+                <div class="ui-win__cols" aria-hidden="true"><span>Name</span><span>Details</span><span>Status</span><span>Size</span></div>
+                <ul class="ui-win__rows">
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="2">FR</span><span class="ui-win__who">FreeRec demo</span><span class="ui-win__sub">Current tab · 1:48</span><span class="ui-win__st is-done" data-st>Saved</span><span class="ui-win__age">13 MB</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="1">SR</span><span class="ui-win__who">Sprint review</span><span class="ui-win__sub">Window · 9:03</span><span class="ui-win__st" data-st>New</span><span class="ui-win__age">81 MB</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="3">BR</span><span class="ui-win__who">Bug repro, checkout</span><span class="ui-win__sub">Current tab · 1:47</span><span class="ui-win__st" data-st>New</span><span class="ui-win__age">14 MB</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="4">WU</span><span class="ui-win__who">Weekly update</span><span class="ui-win__sub">Camera only · 3:20</span><span class="ui-win__st is-done" data-st>Saved</span><span class="ui-win__age">29 MB</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="5">OT</span><span class="ui-win__who">Onboarding tour</span><span class="ui-win__sub">Full screen · 6:55</span><span class="ui-win__st is-done" data-st>Saved</span><span class="ui-win__age">62 MB</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="1">DQ</span><span class="ui-win__who">Design QA notes</span><span class="ui-win__sub">Current tab · 2:31</span><span class="ui-win__st is-done" data-st>Saved</span><span class="ui-win__age">21 MB</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="3">CS</span><span class="ui-win__who">Canvas standup</span><span class="ui-win__sub">Current tab · 4:12</span><span class="ui-win__st is-done" data-st>Saved</span><span class="ui-win__age">38 MB</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="2">PW</span><span class="ui-win__who">Pricing walkthrough</span><span class="ui-win__sub">Window · 5:40</span><span class="ui-win__st is-done" data-st>Saved</span><span class="ui-win__age">49 MB</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="4">HI</span><span class="ui-win__who">Hiring intro</span><span class="ui-win__sub">Camera only · 1:05</span><span class="ui-win__st is-done" data-st>Saved</span><span class="ui-win__age">9 MB</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="5">RN</span><span class="ui-win__who">Release notes 1.1</span><span class="ui-win__sub">Current tab · 3:02</span><span class="ui-win__st is-done" data-st>Saved</span><span class="ui-win__age">26 MB</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="app__pane app__pane--open">
+          <!-- CLIENT FILE demo video: freerec-demo.mp4 (1920x1080, H.264 + AAC, 1:48) and site/poster.jpg (its poster) -->
+          <div class="ui-panel player">
+            <div class="player__head"><b>FreeRec demo.mp4</b><span>1:48 · 1920 × 1080</span></div>
+            <div class="player__stage">
+              <video controls playsinline preload="metadata" poster="site/poster.jpg">
+                <source src="freerec-demo.mp4" type="video/mp4">
+              </video>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </main>
+  </section>
 
-  <footer>FreeRec · MIT License · <a href="https://github.com/kowshik24/freerec">github.com/kowshik24/freerec</a></footer>
+  <section class="section" id="offline" style="--hm: 2" aria-labelledby="offline-h">
+    <div class="wrap">
+      <div class="grid grid--top fill">
+        <div class="span-6 stack-6">
+          <h2 id="offline-h">Works offline, inside Chrome</h2>
+          <p class="t-lead">FreeRec makes no network requests. The code, the WASM runtime and the segmentation model ship inside the extension, and each video is written only to the folder you chose.</p>
+          <div class="stats offline-stats" data-moment="counter-rolls">
+            <div class="stat"><p class="t-stat">0</p><p class="t-small muted">network requests made by the extension</p></div>
+            <div class="stat"><p class="t-stat">4</p><p class="t-small muted">capture modes, camera only included</p></div>
+            <div class="stat"><p class="t-stat">10</p><p class="t-small muted">colour filters for the webcam bubble</p></div>
+            <div class="stat"><p class="t-stat">6</p><p class="t-small muted">canvas templates to present on</p></div>
+          </div>
+        </div>
+        <div class="frame frame--lit span-6 start-7 offline-frame" data-visual>
+          <div class="dg" data-diagram><script type="application/json">{"layout": "fanin", "alt": "Screen, camera and microphone go into FreeRec inside Chrome, which writes the video to a folder on your computer.",
+            "sources": [{"label": "Screen", "icon": "ui:monitor", "sub": "Tab or window"}, {"label": "Camera", "icon": "ui:video", "sub": "Bubble"}, {"label": "Microphone", "icon": "ui:mic", "sub": "Voice"}, {"label": "Tab sound", "icon": "ui:volume-2", "sub": "Share audio"}],
+            "target": {"label": "FreeRec", "icon": "ui:circle-dot"},
+            "then": {"label": "Your folder", "icon": "ui:folder", "meta": "WebM"}}</script></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section g2" id="features" style="--hm: 2" aria-labelledby="features-h">
+    <div class="wrap">
+      <div class="group">
+        <div class="section-head">
+          <h2 id="features-h">What FreeRec records. <span class="muted">Your screen, your camera and stills, on your computer.</span></h2>
+        </div>
+        <div class="grid">
+          <article class="card card--row card--open span-6 m-nolift">
+            <h3>Records a screen, window or tab</h3>
+            <p>Pick Full Screen, Window or Current tab. Current tab starts with no picker when you open FreeRec from its icon.</p>
+            <div class="panel shot-panel"><img class="frame__img" src="site/source.jpg" srcset="site/source-640.jpg 640w, site/source.jpg 1200w" sizes="(max-width: 639px) 342px, 1200px" width="1200" height="581" style="object-position: right top" alt="The FreeRec panel with its source menu open: Full Screen, Window, Current tab and Camera only" loading="lazy" data-source="client" data-subject="FreeRec source menu"></div>
+          </article>
+          <article class="card card--row card--open span-6 m-nolift">
+            <h3>Adds filters and backgrounds to your camera</h3>
+            <p>Blur, five scenes, 11 colours or your own image, plus 10 filters. The person model runs on your device.</p>
+            <div class="panel shot-panel"><img class="frame__img" src="site/effects.jpg" srcset="site/effects-640.jpg 640w, site/effects.jpg 1200w" sizes="(max-width: 639px) 342px, 1200px" width="1200" height="581" style="object-position: right top" alt="The Effects panel with camera filters, the webcam bubble in black and white" loading="lazy" data-source="client" data-subject="FreeRec effects panel"></div>
+          </article>
+        </div>
+      </div>
+      <div class="grid">
+        <article class="card card--row card--open span-6 m-nolift">
+          <h3>Takes area or full-tab screenshots</h3>
+          <p>Drag a rectangle or capture the whole tab as a PNG. FreeRec hides its own controls before the shot.</p>
+          <div class="panel shot-panel"><img class="frame__img" src="site/screenshot.jpg" srcset="site/screenshot-640.jpg 640w, site/screenshot.jpg 1200w" sizes="(max-width: 639px) 342px, 1200px" width="1200" height="581" style="object-position: right top" alt="Screenshot mode in the FreeRec panel with Custom area selected" loading="lazy" data-source="client" data-subject="FreeRec screenshot mode"></div>
+        </article>
+        <article class="card card--row card--open span-6 m-nolift">
+          <h3>Presents on 6 canvas templates</h3>
+          <p>Meeting, Standup, News and three more, plus six text layouts. Each moves your camera bubble into its slot.</p>
+          <div class="panel shot-panel"><img class="frame__img" src="site/canvas.jpg" srcset="site/canvas-640.jpg 640w, site/canvas.jpg 1200w" sizes="(max-width: 639px) 342px, 1200px" width="1200" height="581" alt="The FreeRec canvas with the Meeting template and the webcam bubble in its slot" loading="lazy" data-source="client" data-subject="FreeRec canvas"></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section g2m" id="questions" aria-labelledby="questions-h">
+    <div class="wrap">
+      <div class="grid grid--top">
+        <div class="span-5 stack-4">
+          <h2 id="questions-h">Questions</h2>
+          <p class="muted">The README covers setup, settings and fixes in full.</p>
+          <a class="link gh-link" href="https://github.com/kowshik24/freerec#readme"><img data-icon="si:github" src="assets/icons/github.svg" alt="" width="20" height="20" loading="lazy">Read the README on GitHub</a>
+        </div>
+        <div class="faq span-6 start-7">
+          <div class="faq__item"><h3>Is FreeRec free to use?</h3><p>Yes. It is open source under the MIT licence, with no plan and no watermark.</p></div>
+          <div class="faq__item"><h3>Where does FreeRec save videos?</h3><p>Into a folder you choose once, written as you record. Until then, into Downloads/FreeRec.</p></div>
+        </div>
+      </div>
+      <div class="grid grid--top">
+        <div class="faq span-6 start-7">
+          <div class="faq__item"><h3>Does FreeRec upload anything?</h3><p>No. It makes no network requests and has no account.</p></div>
+          <div class="faq__item"><h3>Which file formats does FreeRec save?</h3><p>WebM with a seekable duration, or MP4 where your Chrome supports it.</p></div>
+          <div class="faq__item"><h3>Can FreeRec record a tab's sound?</h3><p>Yes. Tick Share audio in Chrome's dialog and it is mixed with your microphone.</p></div>
+          <div class="faq__item"><h3>Which browsers run FreeRec?</h3><p>Chrome 116 or newer. Edge, Brave and Arc should work but are not tested.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section ground-surface" id="install" style="--hm: 2" aria-labelledby="install-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="install-h">Install FreeRec in 3 steps</h2>
+        <p>FreeRec is not on the Chrome Web Store yet, so it loads as an unpacked extension.</p>
+      </div>
+      <div class="grid">
+        <article class="card card--row card--open span-4 m-nolift">
+          <span class="step-num">1</span>
+          <h3>Download the release zip</h3>
+          <p>Get the zip from the latest GitHub release and unzip it where it can stay.</p>
+          <div class="panel">
+            <div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:320px;--ax:max(24px, 50% - 160px);--ay:40px;--ay-sm:24px" data-ui-loop>
+              <div class="ui ui-files" data-ui="files" data-reading="Unzipping {n} of {total}">
+                <div class="ui-files__status"><span class="ui-dot"></span><span data-files-status>Unzipped to Documents</span></div>
+                <ul class="ui-files__grid">
+                  <li class="ui-file is-done">
+                    <span class="ui-file__icon"><svg class="ui-file__glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.25 2.75h8L18.75 7.25v14H6.25z"/><path d="M14 2.75v4.75h4.75M11 6h2M11 9h2M11 12h2M11 15h2v3h-2z"/></svg></span>
+                    <span class="ui-file__name">freerec-1.1.0.zip</span>
+                    <span class="ui-file__kind">ZIP</span>
+                    <span class="ui-file__bar"><i></i></span>
+                    <span class="ui-file__check"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4.5 8.2 2.3 2.3 4.7-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </li>
+                  <li class="ui-file is-done">
+                    <span class="ui-file__icon"><svg class="ui-file__glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.25 2.75h8L18.75 7.25v14H6.25z"/><path d="M14 2.75v4.75h4.75M9 12.5h6.5M9 15.5h6.5"/></svg></span>
+                    <span class="ui-file__name">checksum.sha256</span>
+                    <span class="ui-file__kind">Checksum</span>
+                    <span class="ui-file__bar"><i></i></span>
+                    <span class="ui-file__check"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4.5 8.2 2.3 2.3 4.7-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </li>
+                  <li class="ui-file is-done">
+                    <span class="ui-file__icon"><svg class="ui-file__glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.75 6.5a1.5 1.5 0 0 1 1.5-1.5h5l2 2h8.5a1.5 1.5 0 0 1 1.5 1.5v9.5a1.5 1.5 0 0 1-1.5 1.5H4.25a1.5 1.5 0 0 1-1.5-1.5z"/></svg></span>
+                    <span class="ui-file__name">freerec</span>
+                    <span class="ui-file__kind">Folder</span>
+                    <span class="ui-file__bar"><i></i></span>
+                    <span class="ui-file__check"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4.5 8.2 2.3 2.3 4.7-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </li>
+                </ul>
+              </div>
+            </div></div>
+          </div>
+        </article>
+        <article class="card card--row card--open span-4 m-nolift">
+          <span class="step-num">2</span>
+          <h3>Load FreeRec as unpacked</h3>
+          <p>In chrome://extensions turn on Developer mode, then Load unpacked the folder.</p>
+          <div class="panel">
+            <div class="stage"><div class="at-right to-edge" style="--ax:24px;--ay:40px">
+              <div class="ui ui-panel ui-toggles" data-ui="toggles">
+                <div class="ui-head">
+                  <svg class="ui-icon ui-toggles__ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.5h2.5v2a1.25 1.25 0 0 0 2.5 0v-2h2.5V7h-2a1.25 1.25 0 0 0 0 2.5h2v4H2.5V2.5H6"/></svg>
+                  <div class="ui-title">Extensions</div>
+                  <span class="ui-spacer"></span>
+                  <div class="ui-meta" data-tg-count>2 of 3 on</div>
+                </div>
+                <ul class="ui-toggles__list">
+                  <li class="ui-tg">
+                    <span class="ui-tg__text"><span class="ui-tg__label">Developer mode</span><span class="ui-tg__sub">Shows Load unpacked</span></span>
+                    <button class="ui-switch is-on" type="button" role="switch" aria-checked="true" aria-label="Developer mode"><i></i></button>
+                  </li>
+                  <li class="ui-tg">
+                    <span class="ui-tg__text"><span class="ui-tg__label">FreeRec 1.1.0</span><span class="ui-tg__sub">Screen and camera recorder</span></span>
+                    <button class="ui-switch is-on" type="button" role="switch" aria-checked="true" aria-label="FreeRec enabled"><i></i></button>
+                  </li>
+                  <li class="ui-tg">
+                    <span class="ui-tg__text"><span class="ui-tg__label">Allow in Incognito</span><span class="ui-tg__sub">Off by default</span></span>
+                    <button class="ui-switch" type="button" role="switch" aria-checked="false" aria-label="Allow in Incognito"><i></i></button>
+                  </li>
+                </ul>
+              </div>
+            </div></div>
+          </div>
+        </article>
+        <article class="card card--row card--open span-4 m-nolift">
+          <span class="step-num">3</span>
+          <h3>Press Alt+Shift+O to start</h3>
+          <p>The panel opens on the page you are on, ready to record.</p>
+          <div class="panel shot-panel"><img class="frame__img" src="site/panel.jpg" width="1200" height="581" alt="The FreeRec panel on a web page with Start Recording, camera and microphone rows" loading="lazy" style="object-position: right top" data-source="client" data-subject="FreeRec control panel"></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer closing g2m" id="contact" style="--hm: 2" aria-labelledby="close-h">
+  <div class="wrap">
+    <div class="closing__cta close--type">
+      <div class="section-head">
+        <h2 id="close-h">Download FreeRec for Chrome</h2>
+        <p class="t-small muted">Version 1.1.0, released 20 October 2026. Free under the MIT licence.</p>
+      </div>
+      <a class="btn btn--primary btn--xl btn--wide" href="https://github.com/kowshik24/freerec/releases/latest">Download for Chrome<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+    </div>
+    <div class="closing__links">
+      <div class="grid">
+        <div class="span-4 stack-4">
+          <a class="nav__logo" href="#top"><img src="site/icon.png" alt="" width="28" height="28" loading="lazy" style="border-radius:7px">FreeRec</a>
+          <p class="footer__lede">A screen recorder that keeps your files local.</p>
+        </div>
+        <div class="span-2 footer__col"><h3>Demo</h3><ul><li><a href="#demo">Library and playback</a></li><li><a href="freerec-demo.mp4" download>Demo video (MP4)</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Features</h3><ul><li><a href="#features">Capture modes</a></li><li><a href="#offline">Offline by design</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Install</h3><ul><li><a href="#install">Three steps</a></li><li><a href="https://github.com/kowshik24/freerec/releases">All releases</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Questions</h3><ul><li><a href="#questions">FAQ</a></li><li><a href="https://github.com/kowshik24/freerec">Source code</a></li><li><a href="https://github.com/kowshik24/freerec/issues">Issues on GitHub</a></li></ul></div>
+      </div>
+      <div class="footer__legal">
+        <span>&copy; 2026 FreeRec &nbsp; <a href="https://github.com/kowshik24/freerec/blob/main/LICENSE">MIT licence</a></span>
+        <div class="socials"></div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<nav class="actionbar" aria-label="Quick actions">
+  <a class="btn btn--primary" href="https://github.com/kowshik24/freerec/releases/latest">Download for Chrome</a>
+</nav>
+
+<script type="module" src="assets/system.js"></script>
+<script type="module" src="assets/motion/motion.js"></script>
+<script type="module" src="assets/layout/layout.js"></script>
+<script type="module" src="assets/diagrams/mount.js"></script>
 </body>
 </html>
