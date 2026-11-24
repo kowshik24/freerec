@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Acme Launch Plan</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f6f7fb;color:#1c1d22}
+header{background:linear-gradient(120deg,#5b4cf0,#8a5cf6 60%,#e255a1);color:#fff;padding:72px 96px 96px}
+header small{opacity:.8;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:56px;margin:12px 0 10px;letter-spacing:-.02em}header p{font-size:21px;max-width:720px;opacity:.92;line-height:1.5}
+main{max-width:1180px;margin:-56px auto 0;padding:0 48px 80px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card{background:#fff;border-radius:18px;padding:26px;box-shadow:0 10px 30px rgb(30 30 60/8%)}
+.card b{font-size:34px;display:block;margin:6px 0}.card span{color:#6a6d78;font-weight:600}
+.up{color:#17a34a;font-weight:700}
+h2{margin:48px 0 16px;font-size:28px}
+.chart{background:#fff;border-radius:18px;padding:28px;box-shadow:0 10px 30px rgb(30 30 60/8%);display:flex;align-items:flex-end;gap:18px;height:300px}
+.bar{flex:1;border-radius:10px 10px 4px 4px;background:linear-gradient(#8a5cf6,#5b4cf0);position:relative}
+.bar i{position:absolute;bottom:-26px;left:0;right:0;text-align:center;font-style:normal;color:#6a6d78;font-size:13px;font-weight:600}
+ul.tl{list-style:none;padding:0;margin:0;display:grid;gap:14px}
+ul.tl li{background:#fff;border-radius:14px;padding:18px 22px;display:flex;gap:16px;align-items:center;box-shadow:0 6px 20px rgb(30 30 60/6%);font-size:17px}
+ul.tl li em{font-style:normal;background:#efeafe;color:#5b4cf0;font-weight:700;border-radius:8px;padding:4px 10px;font-size:13px}
+</style></head><body>
+<header><small>Q4 Product Review</small><h1>Acme Launch Plan</h1><p>Where we are, what shipped this quarter, and the road to general availability in January.</p></header>
+<main>
+<div class="cards">
+<div class="card"><span>Weekly active users</span><b>48,210</b><span class="up">▲ 18% vs last month</span></div>
+<div class="card"><span>Activation rate</span><b>63.4%</b><span class="up">▲ 5.2 pts</span></div>
+<div class="card"><span>Avg. session length</span><b>11m 42s</b><span class="up">▲ 9%</span></div>
+</div>
+<h2>Signups per month</h2>
+<div class="chart">
+<div class="bar" style="height:30%"><i>Jun</i></div><div class="bar" style="height:38%"><i>Jul</i></div><div class="bar" style="height:46%"><i>Aug</i></div><div class="bar" style="height:57%"><i>Sep</i></div><div class="bar" style="height:71%"><i>Oct</i></div><div class="bar" style="height:92%"><i>Nov</i></div>
+</div>
+<h2>Road to GA</h2>
+<ul class="tl">
+<li><em>Done</em>Onboarding checklist and in-app tours</li>
+<li><em>Done</em>Team workspaces with roles</li>
+<li><em>Dec</em>Usage-based billing and invoices</li>
+<li><em>Dec</em>SSO (SAML + OIDC)</li>
+<li><em>Jan</em>Public launch and press kit</li>
+</ul>
+</main></body></html>

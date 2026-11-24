@@ -1,0 +1,21 @@
+<!doctype html><html><head><meta charset="utf-8"><title>FreeRec</title><style>
+html,body{margin:0;height:100%;overflow:hidden}
+body{display:grid;place-items:center;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#fff;
+background:radial-gradient(1200px 700px at 20% 10%,#7a5cf6 0%,transparent 60%),radial-gradient(900px 600px at 90% 100%,#e255a1 0%,transparent 55%),#17142e}
+.wrap{text-align:center;animation:in .9s cubic-bezier(.2,.8,.2,1) both}
+img{width:116px;height:116px;border-radius:28px;box-shadow:0 18px 50px rgb(0 0 0/40%);animation:pop 1s .1s cubic-bezier(.2,1.4,.4,1) both}
+h1{font-size:88px;margin:26px 0 6px;letter-spacing:-.03em}
+p{font-size:28px;margin:0;opacity:.9;font-weight:500}
+.chips{display:flex;gap:12px;justify-content:center;margin-top:34px;animation:in .9s .5s both}
+.chips span{border:1px solid rgb(255 255 255/30%);background:rgb(255 255 255/8%);border-radius:999px;padding:9px 18px;font-size:18px;font-weight:600}
+.url{margin-top:34px;font:600 22px ui-monospace,Menlo,monospace;opacity:.85;animation:in .9s .8s both}
+@keyframes in{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+</style></head><body><div class="wrap">
+<img src="icon.png" alt=""><h1 id="t"></h1><p id="s"></p><div class="chips" id="chips"></div><div class="url" id="url"></div></div>
+<script>
+const q=new URLSearchParams(location.search);
+t.textContent=q.get('t');s.textContent=q.get('s');
+if(q.get('k')==='title'){chips.innerHTML=['Screen','Window','Tab','Camera','Screenshots'].map(x=>`<span>${x}</span>`).join('')}
+else{url.textContent='github.com/kowshik24/freerec';chips.innerHTML='<span>Open source · MIT</span><span>Chrome 116+</span>'}
+</script></body></html>
