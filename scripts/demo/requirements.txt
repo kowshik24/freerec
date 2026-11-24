@@ -1,0 +1,5 @@
+playwright>=1.48
+imageio-ffmpeg>=0.5
+numpy>=1.26
+# optional: natural narration with Kokoro-82M (falls back to macOS `say` without it)
+kokoro-onnx>=0.4
