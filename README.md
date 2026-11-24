@@ -17,6 +17,8 @@ upload.
 ![Runs offline](https://img.shields.io/badge/runs-100%25%20offline-c9372c)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
+**[▶ Watch the 2-minute demo · kowshik24.github.io/freerec](https://kowshik24.github.io/freerec/)**
+
 </div>
 
 ---
